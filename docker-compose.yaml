@@ -1,0 +1,14 @@
+services:
+  talker:
+    image: ros-humble-turtlebot
+    container_name: talker
+    command: "ros2 topic pub /chatter std_msgs/String \"{data: 'Hello World'}\" -r 2"
+    environment:
+      - ROS_DOMAIN_ID=30
+
+  listener:
+    image: ros-humble-turtlebot
+    container_name: listener
+    command: "ros2 topic echo /chatter"
+    environment:
+      - ROS_DOMAIN_ID=30
