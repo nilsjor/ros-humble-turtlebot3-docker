@@ -13,7 +13,7 @@
 
 services:
 
-  # Base image containing dependencies.
+  # Base image
   base:
     image: nilsjor/ros-humble-turtlebot:base
     build:
@@ -26,7 +26,7 @@ services:
     stdin_open: true
     tty: true
 
-  # Overlay image containing the example source code.
+  # Overlay image with network diagnostics tools
   ip-overlay:
     extends: base
     image: nilsjor/ros-humble-turtlebot:netdiag
@@ -35,10 +35,19 @@ services:
       dockerfile: Dockerfile
       target: ip-overlay
 
-  # Overlay image containing the example source code.
+  # Overlay image with SSH client
   ssh-overlay:
-    extends: ip-overlay
+    extends: base
     image: nilsjor/ros-humble-turtlebot:sshd
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: ssh-overlay
+
+  # Point "latest" tag to the SSH overlay
+  latest:
+    extends: base
+    image: nilsjor/ros-humble-turtlebot:latest
     build:
       context: .
       dockerfile: Dockerfile
@@ -46,10 +55,10 @@ services:
 
   # Run test nodes
   talker:
+    extends: ip-overlay
     container_name: talker
-    extends: base
     command: "ros2 topic pub /chatter std_msgs/String \"{data: 'Hello World'}\" -r 2"
   listener:
+    extends: ip-overlay
     container_name: listener
-    extends: base
     command: "ros2 topic echo /chatter"
