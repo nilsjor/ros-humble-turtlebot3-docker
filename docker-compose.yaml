@@ -1,14 +1,55 @@
-services:
-  talker:
-    image: ros-humble-turtlebot
-    container_name: talker
-    command: "ros2 topic pub /chatter std_msgs/String \"{data: 'Hello World'}\" -r 2"
-    environment:
-      - ROS_DOMAIN_ID=30
+# Docker Compose file for TurtleBot3 Examples
+#
+# Usage:
+#
+# To build the images:
+#   docker compose build
+#
+# To start up a specific service by name:
+#   docker compose up <service_name>
+#
+# To open an interactive shell to a running container:
+#   docker exec -it <container_name> bash
 
+services:
+
+  # Base image containing dependencies.
+  base:
+    image: nilsjor/ros-humble-turtlebot:base
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        ROS_DISTRO: humble
+      target: base
+    # Interactive shell
+    stdin_open: true
+    tty: true
+
+  # Overlay image containing the example source code.
+  ip-overlay:
+    extends: base
+    image: nilsjor/ros-humble-turtlebot:netdiag
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: ip-overlay
+
+  # Overlay image containing the example source code.
+  ssh-overlay:
+    extends: ip-overlay
+    image: nilsjor/ros-humble-turtlebot:sshd
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: ssh-overlay
+
+  # Run test nodes
+  talker:
+    container_name: talker
+    extends: base
+    command: "ros2 topic pub /chatter std_msgs/String \"{data: 'Hello World'}\" -r 2"
   listener:
-    image: ros-humble-turtlebot
     container_name: listener
+    extends: base
     command: "ros2 topic echo /chatter"
-    environment:
-      - ROS_DOMAIN_ID=30
