@@ -39,10 +39,17 @@ RUN apt-get update && apt-get install -y \
 # SSH overlay
 FROM ip-overlay AS ssh-overlay
 
-## Install and configure SSH server
+## Install SSH server and necessary tools
 RUN apt-get update && apt-get install -y \
     iproute2 \
     openssh-server
+
+## Set SSH authentication methods
+COPY sshd_config /etc/ssh/
+
+## Set environment variables for ExPECA
+ENV DNS_IP=1.1.1.1
+ENV GATEWAY_IP=130.237.11.97
 
 # Set new entrypoint
 COPY ssh_entrypoint.sh /usr/local/bin/

@@ -4,25 +4,29 @@
 if /sbin/capsh --has-p='cap_net_admin' ; then
 
     # Set the nameserver
-    if [ -z "${DNS_IP}" ]; then
-        echo "Environment variable DNS_IP is not defined. Using Cloudflare as default."
-        echo nameserver 1.1.1.1 > /etc/resolv.conf
-    else
-        echo "Nameserver is defined as ${DNS_IP}."
-        echo nameserver $DNS_IP > /etc/resolv.conf
-    fi
+    echo "Nameserver set to ${DNS_IP}."
+    echo nameserver $DNS_IP > /etc/resolv.conf
 
     # Set the default gateway
-    if [ -z "${GATEWAY_IP}" ]; then
-        echo "Environment variable GATEWAY_IP is not defined."
-    else
-        echo "Default gateway is defined as ${GATEWAY_IP}."
-        ip route del default
-        ip route add default via $GATEWAY_IP
-    fi
+    echo "Default gateway set to ${GATEWAY_IP}."
+    ip route del default
+    ip route add default via $GATEWAY_IP
+
 else
     echo "Error: NET_ADMIN capability is not available. Connectivity may not work properly." >&2
 fi
+
+# Set root password
+if [ -n "$PASS" ]; then
+    echo "root:$PASS" | chpasswd
+    echo "Root password set from PASS environment variable."
+else
+    echo "Warning: Environment variable PASS is not defined. Using empty password."
+    echo "root:" | chpasswd -e
+fi
+
+# Start the SSH daemon
+service ssh start
 
 # setup ros2 environment
 exec /ros_entrypoint.sh "$@"
