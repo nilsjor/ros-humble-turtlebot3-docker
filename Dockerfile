@@ -17,6 +17,11 @@ RUN apt-get update && apt-get install -y \
     ros-humble-turtlebot3-msgs \
     ros-humble-turtlebot3
 
+# Set environment variables
+ENV ROS_DOMAIN_ID=30
+ENV TURTLEBOT3_MODEL=waffle_pi
+ENV LDS_MODEL=LDS-01
+
 # Install debugging packages
 RUN apt-get update && apt-get install -y \
     iputils* \
@@ -24,16 +29,16 @@ RUN apt-get update && apt-get install -y \
     tcpdump \
     traceroute \
     mtr-tiny \
-    dnsutils
+    dnsutils \
+    nmap
 
-# Install SSH server
+# Install and configure SSH server
 RUN apt-get update && apt-get install -y \
-    openssh-server \
-    iproute2
+    iproute2 \
+    openssh-server
 
-RUN sed -i '4s|^|# First fix the nameserver on the container\n|' /ros_entrypoint.sh
-RUN sed -i '5s|^|echo nameserver $DNS_IP > /etc/resolv.conf\n|' /ros_entrypoint.sh
-RUN sed -i '6s|^|# Fix the gateway\n|' /ros_entrypoint.sh
-RUN sed -i '7s|^|ip route del default\n|' /ros_entrypoint.sh
-RUN sed -i '8s|^|ip route add default via $GATEWAY_IP\n|' /ros_entrypoint.sh
-RUN sed -i '9s|^|\n|' /ros_entrypoint.sh
+# Set new entrypoint
+COPY ssh_entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/ssh_entrypoint.sh
+ENTRYPOINT ["/usr/local/bin/ssh_entrypoint.sh"]
+CMD ["/bin/bash"]
