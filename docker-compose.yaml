@@ -1,12 +1,12 @@
-# Docker Compose file for TurtleBot3 Examples
+# Docker Compose file for TurtleBot3
 #
 # Usage:
 #
 # To build the images:
 #   docker compose build
 #
-# To start up a specific service by name:
-#   docker compose up <service_name>
+# To start up a test-case:
+#   docker compose up -d talker listener
 #
 # To open an interactive shell to a running container:
 #   docker exec -it <container_name> bash
@@ -22,9 +22,6 @@ services:
       args:
         ROS_DISTRO: humble
       target: base
-    # Interactive shell
-    stdin_open: true
-    tty: true
 
   # Overlay image with network diagnostics tools
   ip-overlay:
@@ -37,17 +34,7 @@ services:
 
   # Overlay image with SSH client
   ssh-overlay:
-    extends: base
-    image: nilsjor/ros-humble-turtlebot:sshd
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: ssh-overlay
-
-  # Point "latest" tag to the SSH overlay
-  latest:
-    extends: base
-    image: nilsjor/ros-humble-turtlebot:latest
+    image: nilsjor/ros-humble-turtlebot:sshd-v1.0
     build:
       context: .
       dockerfile: Dockerfile
@@ -55,10 +42,11 @@ services:
 
   # Run test nodes
   talker:
-    extends: ip-overlay
+    image: nilsjor/ros-humble-turtlebot:netdiag
     container_name: talker
     command: "ros2 topic pub /chatter std_msgs/String \"{data: 'Hello World'}\" -r 2"
+
   listener:
-    extends: ip-overlay
+    image: nilsjor/ros-humble-turtlebot:netdiag
     container_name: listener
     command: "ros2 topic echo /chatter"
