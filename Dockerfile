@@ -34,6 +34,7 @@ RUN apt-get update && apt-get install -y \
 RUN apt-get update && apt-get install -y \
     iputils* \
     net-tools \
+    iproute2 \
     tcpdump \
     traceroute \
     mtr-tiny \
@@ -45,9 +46,8 @@ RUN apt-get update && apt-get install -y \
 # SSH overlay
 FROM netdiag-overlay AS ssh-overlay
 
-## Install SSH server and necessary tools
+## Install SSH server
 RUN apt-get update && apt-get install -y \
-    iproute2 \
     openssh-server
 
 ## Set SSH authentication methods
