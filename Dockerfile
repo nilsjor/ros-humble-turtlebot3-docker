@@ -36,6 +36,14 @@ RUN apt-get update && apt-get install -y \
     dnsutils \
     nmap
 
+# Talker overlay
+FROM ip-overlay AS talker
+CMD ["bash", "-c", "ros2 topic pub /chatter std_msgs/String '{data: \"Hello World\"}' -r 2"]
+
+# Listener overlay
+FROM ip-overlay AS listener
+CMD ["bash", "-c", "ros2 topic echo /chatter"]
+
 # SSH overlay
 FROM ip-overlay AS ssh-overlay
 
@@ -55,4 +63,4 @@ ENV GATEWAY_IP=130.237.11.97
 COPY ssh_entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/ssh_entrypoint.sh
 ENTRYPOINT ["/usr/local/bin/ssh_entrypoint.sh"]
-CMD ["/bin/bash"]
+CMD ["bash"]
