@@ -42,16 +42,32 @@ services:
   # Run test nodes
   talker:
     container_name: talker
-    image: nilsjor/ros-humble-turtlebot:talker-v0.1
+    image: nilsjor/ros-humble-turtlebot:talker-v0.2
     build:
       context: .
       dockerfile: Dockerfile
       target: talker
+    environment:
+      - ROS_DISCOVERY_SERVER=discovery:11811
+    depends_on:
+      - discovery
 
   listener:
     container_name: listener
-    image: nilsjor/ros-humble-turtlebot:listener-v0.1
+    image: nilsjor/ros-humble-turtlebot:listener-v0.2
     build:
       context: .
       dockerfile: Dockerfile
       target: listener
+    environment:
+      - ROS_DISCOVERY_SERVER=discovery:11811
+    depends_on:
+      - discovery
+
+  discovery:
+    container_name: discovery
+    image: nilsjor/ros-humble-turtlebot:discovery-v0.1
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: discovery-server

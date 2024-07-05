@@ -42,14 +42,6 @@ RUN apt-get update && apt-get install -y \
     curl \
     wget
 
-# Talker overlay
-FROM netdiag-overlay AS talker
-CMD ["bash", "-c", "ros2 topic pub /chatter std_msgs/String '{data: \"Hello World\"}' -r 2"]
-
-# Listener overlay
-FROM netdiag-overlay AS listener
-CMD ["bash", "-c", "ros2 topic echo /chatter"]
-
 # SSH overlay
 FROM netdiag-overlay AS ssh-overlay
 
@@ -70,3 +62,17 @@ COPY ssh_entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/ssh_entrypoint.sh
 ENTRYPOINT ["/usr/local/bin/ssh_entrypoint.sh"]
 CMD ["bash"]
+
+# Ready-to-go images
+## Talker overlay
+FROM netdiag-overlay AS talker
+CMD ["bash", "-c", "ros2 run demo_nodes_cpp talker"]
+
+## Listener overlay
+FROM netdiag-overlay AS listener
+CMD ["bash", "-c", "ros2 run demo_nodes_cpp listener"]
+
+## Discovery server overlay
+FROM netdiag-overlay AS discovery-server
+ENV ROS_DISCOVERY_SERVER=127.0.0.1:11811
+CMD ["bash", "-c", "fastdds discovery --server-id 0"]
