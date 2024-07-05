@@ -15,7 +15,7 @@ services:
 
   # Base image
   base:
-    image: nilsjor/ros-humble-turtlebot:base
+    image: nilsjor/ros-humble-turtlebot:base-v1.0
     build:
       context: .
       dockerfile: Dockerfile
@@ -25,15 +25,15 @@ services:
 
   # Overlay image with network diagnostics tools
   ip-overlay:
-    image: nilsjor/ros-humble-turtlebot:netdiag
+    image: nilsjor/ros-humble-turtlebot:netdiag-v1.1
     build:
       context: .
       dockerfile: Dockerfile
-      target: ip-overlay
+      target: netdiag-overlay
 
   # Overlay image with SSH client
   ssh-overlay:
-    image: nilsjor/ros-humble-turtlebot:sshd-v1.0
+    image: nilsjor/ros-humble-turtlebot:sshd-v1.1
     build:
       context: .
       dockerfile: Dockerfile

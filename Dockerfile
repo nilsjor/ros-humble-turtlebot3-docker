@@ -24,9 +24,13 @@ ENV TURTLEBOT3_MODEL=waffle_pi
 ENV LDS_MODEL=LDS-01
 
 # Networking overlay
-FROM base AS ip-overlay
+FROM base AS netdiag-overlay
 
-## Install debugging packages
+## Install ros2 demo nodes
+RUN apt-get update && apt-get install -y \
+    ros-${ROS_DISTRO}-demo-nodes-cpp 
+
+## Install network diagnostics packages
 RUN apt-get update && apt-get install -y \
     iputils* \
     net-tools \
@@ -34,18 +38,20 @@ RUN apt-get update && apt-get install -y \
     traceroute \
     mtr-tiny \
     dnsutils \
-    nmap
+    nmap \
+    curl \
+    wget
 
 # Talker overlay
-FROM ip-overlay AS talker
+FROM netdiag-overlay AS talker
 CMD ["bash", "-c", "ros2 topic pub /chatter std_msgs/String '{data: \"Hello World\"}' -r 2"]
 
 # Listener overlay
-FROM ip-overlay AS listener
+FROM netdiag-overlay AS listener
 CMD ["bash", "-c", "ros2 topic echo /chatter"]
 
 # SSH overlay
-FROM ip-overlay AS ssh-overlay
+FROM netdiag-overlay AS ssh-overlay
 
 ## Install SSH server and necessary tools
 RUN apt-get update && apt-get install -y \
