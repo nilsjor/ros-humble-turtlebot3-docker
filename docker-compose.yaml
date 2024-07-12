@@ -25,7 +25,7 @@ services:
 
   # Overlay image with ros-desktop
   desktop:
-    image: nilsjor/ros-humble-turtlebot:desktop-v1.0
+    image: nilsjor/ros-humble-turtlebot:desktop-latest
     build:
       context: .
       dockerfile: Dockerfile
