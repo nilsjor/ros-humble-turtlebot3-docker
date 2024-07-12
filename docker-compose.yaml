@@ -23,6 +23,14 @@ services:
         ROS_DISTRO: humble
       target: base
 
+  # Overlay image with ros-desktop
+  desktop:
+    image: nilsjor/ros-humble-turtlebot:desktop-v1.0
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: desktop
+
   # Overlay image with network diagnostics tools
   ip-overlay:
     image: nilsjor/ros-humble-turtlebot:netdiag-v1.2

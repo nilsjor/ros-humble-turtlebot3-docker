@@ -28,6 +28,11 @@ ENV TURTLEBOT3_MODEL=waffle_pi
 ENV LDS_MODEL=LDS-01
 
 # Networking overlay
+FROM base AS desktop
+RUN apt-get update && apt-get install -y \
+    ros-${ROS_DISTRO}-desktop 
+
+# Networking overlay
 FROM base AS netdiag-overlay
 
 ## Install network diagnostics packages
@@ -73,6 +78,6 @@ FROM netdiag-overlay AS listener
 CMD ["bash", "-c", "ros2 run demo_nodes_cpp listener"]
 
 ## Discovery server overlay
-FROM netdiag-overlay AS discovery-server
+FROM ssh-overlay AS discovery-server
 ENV ROS_DISCOVERY_SERVER=127.0.0.1:11811
 CMD ["bash", "-c", "fastdds discovery --server-id 0"]
