@@ -18,6 +18,10 @@ RUN apt-get update && apt-get install -y \
     ros-${ROS_DISTRO}-turtlebot3-msgs \
     ros-${ROS_DISTRO}-turtlebot3
 
+## Install ros2 demo nodes
+RUN apt-get update && apt-get install -y \
+    ros-${ROS_DISTRO}-demo-nodes-cpp 
+
 ## Set environment variables
 ENV ROS_DOMAIN_ID=30
 ENV TURTLEBOT3_MODEL=waffle_pi
@@ -25,10 +29,6 @@ ENV LDS_MODEL=LDS-01
 
 # Networking overlay
 FROM base AS netdiag-overlay
-
-## Install ros2 demo nodes
-RUN apt-get update && apt-get install -y \
-    ros-${ROS_DISTRO}-demo-nodes-cpp 
 
 ## Install network diagnostics packages
 RUN apt-get update && apt-get install -y \
