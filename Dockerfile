@@ -33,13 +33,14 @@ FROM base AS netdiag-overlay
 ## Install network diagnostics packages
 RUN apt-get update && apt-get install -y \
     iputils* \
-    net-tools \
-    iproute2 \
-    tcpdump \
     traceroute \
-    mtr-tiny \
+    net-tools \
     dnsutils \
+    iproute2 \
     nmap \
+    tcpdump \
+    tcpflow \
+    iperf3 \
     curl \
     wget
 
@@ -60,6 +61,7 @@ ENV GATEWAY_IP=130.237.11.97
 # Set new entrypoint
 COPY ssh_entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/ssh_entrypoint.sh
+EXPOSE 22
 ENTRYPOINT ["/usr/local/bin/ssh_entrypoint.sh"]
 CMD ["bash"]
 

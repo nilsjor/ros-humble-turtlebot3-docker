@@ -33,7 +33,7 @@ services:
 
   # Overlay image with network diagnostics tools
   ip-overlay:
-    image: nilsjor/ros-humble-turtlebot:netdiag-v1.2
+    image: nilsjor/ros-humble-turtlebot:netdiag-v1.3
     build:
       context: .
       dockerfile: Dockerfile
@@ -41,7 +41,7 @@ services:
 
   # Overlay image with SSH client
   ssh-overlay:
-    image: nilsjor/ros-humble-turtlebot:sshd-v1.2
+    image: nilsjor/ros-humble-turtlebot:sshd-v1.3
     build:
       context: .
       dockerfile: Dockerfile
@@ -50,7 +50,7 @@ services:
   # Run test nodes
   talker:
     container_name: talker
-    image: nilsjor/ros-humble-turtlebot:talker-v0.3
+    image: nilsjor/ros-humble-turtlebot:talker-v0.4
     build:
       context: .
       dockerfile: Dockerfile
@@ -62,7 +62,7 @@ services:
 
   listener:
     container_name: listener
-    image: nilsjor/ros-humble-turtlebot:listener-v0.3
+    image: nilsjor/ros-humble-turtlebot:listener-v0.4
     build:
       context: .
       dockerfile: Dockerfile
@@ -74,7 +74,7 @@ services:
 
   discovery:
     container_name: discovery
-    image: nilsjor/ros-humble-turtlebot:discovery-v0.3
+    image: nilsjor/ros-humble-turtlebot:discovery-v0.4
     build:
       context: .
       dockerfile: Dockerfile
