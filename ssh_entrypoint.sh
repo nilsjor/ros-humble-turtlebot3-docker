@@ -29,4 +29,4 @@ fi
 service ssh start
 
 # setup ros2 environment
-exec /l2tp_entrypoint.sh "$@"
+exec /usr/local/bin/l2tp_entrypoint.sh "$@"

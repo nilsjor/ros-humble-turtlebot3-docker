@@ -41,7 +41,7 @@ services:
 
   # Overlay image with SSH client
   ssh-overlay:
-    image: nilsjor/ros-humble-turtlebot:sshd-v1.5
+    image: nilsjor/ros-humble-turtlebot:sshd-v1.6
     build:
       context: .
       dockerfile: Dockerfile
@@ -78,4 +78,4 @@ services:
       context: .
       dockerfile: Dockerfile
       target: discovery-server
-    image: nilsjor/ros-humble-turtlebot:discovery-v0.6
+    image: nilsjor/ros-humble-turtlebot:discovery-v0.7
