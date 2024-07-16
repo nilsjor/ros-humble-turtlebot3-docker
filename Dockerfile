@@ -30,6 +30,12 @@ ENV LDS_MODEL=LDS-01
 # Networking overlay
 FROM base AS netdiag-overlay
 
+## Install samiemostafavi/perfmeas
+RUN apt-get update && apt-get install -y wget
+RUN wget https://raw.githubusercontent.com/samiemostafavi/perfmeas/master/pfm -P /usr/local/bin/
+RUN chmod +x /usr/local/bin/pfm
+RUN sed -i '4i\# Start pfm server\npfm > /proc/1/fd/1 2>&1 &\n' ros_entrypoint.sh
+
 ## Install network diagnostics packages
 RUN apt-get update && apt-get install -y \
     iputils* \
@@ -41,8 +47,7 @@ RUN apt-get update && apt-get install -y \
     tcpdump \
     tcpflow \
     iperf3 \
-    curl \
-    wget
+    curl
 
 # SSH overlay
 FROM netdiag-overlay AS ssh-overlay
