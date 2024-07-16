@@ -27,6 +27,9 @@ ENV ROS_DOMAIN_ID=30
 ENV TURTLEBOT3_MODEL=waffle_pi
 ENV LDS_MODEL=LDS-01
 
+## Source setup in subsequent bash shells
+RUN printf "\n# ROS2 setup\nsource /opt/ros/${ROS_DISTRO}/setup.bash\n" >> /root/.bashrc
+
 # Networking overlay
 FROM base AS netdiag-overlay
 
@@ -49,8 +52,21 @@ RUN apt-get update && apt-get install -y \
     iperf3 \
     curl
 
+# L2TP overlay
+FROM netdiag-overlay AS l2tp-overlay
+
+## Set port to be used by L2TP
+ENV L2TP_PORT=1701
+EXPOSE ${L2TP_PORT}
+
+# Set new entrypoint
+COPY l2tp_entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/l2tp_entrypoint.sh
+ENTRYPOINT ["/usr/local/bin/l2tp_entrypoint.sh"]
+CMD ["bash"]
+
 # SSH overlay
-FROM netdiag-overlay AS ssh-overlay
+FROM l2tp-overlay AS ssh-overlay
 
 ## Install SSH server
 RUN apt-get update && apt-get install -y \
@@ -59,6 +75,9 @@ RUN apt-get update && apt-get install -y \
 ## Set SSH authentication methods
 COPY sshd_config /etc/ssh/
 
+## Expose SSH port
+EXPOSE 22
+
 ## Set environment variables for ExPECA
 ENV DNS_IP=1.1.1.1
 ENV GATEWAY_IP=130.237.11.97
@@ -66,17 +85,16 @@ ENV GATEWAY_IP=130.237.11.97
 # Set new entrypoint
 COPY ssh_entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/ssh_entrypoint.sh
-EXPOSE 22
 ENTRYPOINT ["/usr/local/bin/ssh_entrypoint.sh"]
 CMD ["bash"]
 
 # Ready-to-go images
 ## Talker overlay
-FROM netdiag-overlay AS talker
+FROM l2tp-overlay AS talker
 CMD ["bash", "-c", "ros2 run demo_nodes_cpp talker"]
 
 ## Listener overlay
-FROM netdiag-overlay AS listener
+FROM l2tp-overlay AS listener
 CMD ["bash", "-c", "ros2 run demo_nodes_cpp listener"]
 
 ## Discovery server overlay

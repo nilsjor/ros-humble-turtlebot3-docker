@@ -13,7 +13,7 @@ if /sbin/capsh --has-p='cap_net_admin' ; then
     ip route add default via $GATEWAY_IP
 
 else
-    echo "Error: NET_ADMIN capability is not available. Connectivity may not work properly." >&2
+    echo "Error: NET_ADMIN capability is not available. Outbound connection may not work properly." >&2
 fi
 
 # Set root password
@@ -29,4 +29,4 @@ fi
 service ssh start
 
 # setup ros2 environment
-exec /ros_entrypoint.sh "$@"
+exec /l2tp_entrypoint.sh "$@"
