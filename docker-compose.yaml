@@ -41,7 +41,7 @@ services:
 
   # Overlay image with SSH client
   ssh-overlay:
-    image: nilsjor/ros-humble-turtlebot:sshd-v1.6
+    image: nilsjor/ros-humble-turtlebot:sshd-v1.7
     build:
       context: .
       dockerfile: Dockerfile
@@ -50,7 +50,7 @@ services:
   # Run test nodes
   talker:
     container_name: talker
-    image: nilsjor/ros-humble-turtlebot:talker-v0.6
+    image: nilsjor/ros-humble-turtlebot:talker-v0.7
     build:
       context: .
       dockerfile: Dockerfile
@@ -62,7 +62,7 @@ services:
 
   listener:
     container_name: listener
-    image: nilsjor/ros-humble-turtlebot:listener-v0.6
+    image: nilsjor/ros-humble-turtlebot:listener-v0.7
     build:
       context: .
       dockerfile: Dockerfile
@@ -78,4 +78,4 @@ services:
       context: .
       dockerfile: Dockerfile
       target: discovery-server
-    image: nilsjor/ros-humble-turtlebot:discovery-v0.7
+    image: nilsjor/ros-humble-turtlebot:discovery-v0.8

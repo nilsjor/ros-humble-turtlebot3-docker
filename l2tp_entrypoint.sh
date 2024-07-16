@@ -14,7 +14,7 @@ if /sbin/capsh --has-p='cap_net_admin' ; then
 
     ip link set dev l2tp0 up
 
-    ip addr add dev l2tp0 ${L2TP_ENDPOINT_CIDR}
+    ip addr add ${L2TP_ENDPOINT_CIDR} broadcast ${L2TP_BROADCAST} dev l2tp0
 
 else
     echo "Error: NET_ADMIN capability is not available. Tunneling may not work properly." >&2
