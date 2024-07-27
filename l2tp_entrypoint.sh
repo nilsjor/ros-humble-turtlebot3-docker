@@ -14,10 +14,14 @@ if /sbin/capsh --has-p='cap_net_admin' ; then
 
     ip link set dev l2tp0 up
 
-    ip addr add ${L2TP_ENDPOINT_CIDR} broadcast ${L2TP_BROADCAST} dev l2tp0
+    if [ -n "$L2TP_BROADCAST" ]; then
+        ip addr add ${L2TP_ENDPOINT_CIDR} broadcast ${L2TP_BROADCAST} dev l2tp0
+    else
+        ip addr add ${L2TP_ENDPOINT_CIDR} dev l2tp0
+    fi
 
 else
-    echo "Error: NET_ADMIN capability is not available. Tunneling may not work properly." >&2
+    echo "Error: NET_ADMIN capability is not available. L2TP tunnel has not been configured!" >&2
 fi
 
 # setup ros2 environment

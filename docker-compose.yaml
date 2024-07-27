@@ -32,50 +32,50 @@ services:
       target: desktop
 
   # Overlay image with network diagnostics tools
-  ip-overlay:
-    image: nilsjor/ros-humble-turtlebot:netdiag-v1.5
+  husarnet:
+    image: nilsjor/ros-humble-turtlebot:husarnet-v1.1
     build:
       context: .
       dockerfile: Dockerfile
-      target: netdiag-overlay
-
-  # Overlay image with SSH client
-  ssh-overlay:
-    image: nilsjor/ros-humble-turtlebot:sshd-v1.7
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: ssh-overlay
-
-  # Run test nodes
-  talker:
-    container_name: talker
-    image: nilsjor/ros-humble-turtlebot:talker-v0.7
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: talker
+      target: husarnet-overlay
     environment:
-      - ROS_DISCOVERY_SERVER=discovery:11811
-    depends_on:
-      - discovery
+      - HUSARNET_HOSTNAME=husarnet-test
+    env_file:
+      - secret.env
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+      
 
-  listener:
-    container_name: listener
-    image: nilsjor/ros-humble-turtlebot:listener-v0.7
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: listener
-    environment:
-      - ROS_DISCOVERY_SERVER=discovery:11811
-    depends_on:
-      - discovery
+  # # Run test nodes
+  # talker:
+  #   container_name: talker
+  #   image: nilsjor/ros-humble-turtlebot:talker-v0.7
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #     target: talker
+  #   environment:
+  #     - ROS_DISCOVERY_SERVER=discovery:11811
+  #   depends_on:
+  #     - discovery
 
-  discovery:
-    container_name: discovery
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: discovery-server
-    image: nilsjor/ros-humble-turtlebot:discovery-v0.8
+  # listener:
+  #   container_name: listener
+  #   image: nilsjor/ros-humble-turtlebot:listener-v0.7
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #     target: listener
+  #   environment:
+  #     - ROS_DISCOVERY_SERVER=discovery:11811
+  #   depends_on:
+  #     - discovery
+
+  # discovery:
+  #   container_name: discovery
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #     target: discovery-server
+  #   image: nilsjor/ros-humble-turtlebot:discovery-v0.8
