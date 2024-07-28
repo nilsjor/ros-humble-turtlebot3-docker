@@ -22,10 +22,15 @@ RUN apt-get update && apt-get install -y \
 RUN apt-get update && apt-get install -y \
     ros-${ROS_DISTRO}-demo-nodes-cpp 
 
+## Install Cyclone DDS
+RUN apt-get update && apt-get install -y \
+    ros-${ROS_DISTRO}-rmw-cyclonedds-cpp
+
 ## Set environment variables
 ENV ROS_DOMAIN_ID=30
 ENV TURTLEBOT3_MODEL=waffle_pi
 ENV LDS_MODEL=LDS-01
+ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 
 ## Source setup in subsequent bash shells
 RUN printf "\n# ROS2 setup\nsource /opt/ros/${ROS_DISTRO}/setup.bash\n" >> /root/.bashrc
@@ -67,14 +72,20 @@ CMD ["bash"]
 # Husarnet overlay
 FROM ssh-overlay AS husarnet-overlay
 
+# Install Husarnet
 RUN apt-get update -y
-
 RUN curl -L https://github.com/husarnet/husarnet/releases/download/v2.0.180/husarnet-linux-amd64.deb -o /tmp/husarnet.deb
 RUN apt install -y --no-install-recommends --no-install-suggests \
     /tmp/husarnet.deb && rm -f /tmp/husarnet.deb
 
+# Add Husarnet scripts
 COPY --chmod=0755 ./husarnet-docker.sh /usr/bin/husarnet-docker
 COPY --chmod=0755 ./husarnet-docker-healthcheck.sh /usr/bin/husarnet-docker-healthcheck
+
+# Prepare CycloneDDS
+RUN curl -L https://github.com/husarnet/husarnet-dds/releases/download/v1.3.5/husarnet-dds-linux-amd64 -o /usr/local/bin/husarnet-dds
+RUN chmod +x /usr/local/bin/husarnet-dds
+ENV CYCLONEDDS_URI=file:///var/tmp/husarnet-cyclone.xml
 
 SHELL ["/usr/bin/bash", "-c"]
 HEALTHCHECK --interval=10s --timeout=65s --start-period=5s --retries=6 CMD husarnet-docker-healthcheck || exit 1

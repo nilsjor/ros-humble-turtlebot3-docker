@@ -15,7 +15,7 @@ services:
 
   # Base image
   base:
-    image: nilsjor/ros-humble-turtlebot:base-v1.2
+    image: nilsjor/ros-humble-turtlebot:base-v1.3
     build:
       context: .
       dockerfile: Dockerfile
@@ -33,7 +33,7 @@ services:
 
   # Overlay image with network diagnostics tools
   husarnet:
-    image: nilsjor/ros-humble-turtlebot:husarnet-v1.1
+    image: nilsjor/ros-humble-turtlebot:husarnet-v1.2
     build:
       context: .
       dockerfile: Dockerfile
