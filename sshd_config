@@ -1,7 +1,7 @@
 Include /etc/ssh/sshd_config.d/*.conf
 PermitRootLogin yes
-PasswordAuthentication yes
-PermitEmptyPasswords yes
+PasswordAuthentication no
+PermitEmptyPasswords no
 KbdInteractiveAuthentication no
 UsePAM no
 ChallengeResponseAuthentication no

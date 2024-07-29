@@ -20,15 +20,6 @@ else
     echo "Error: NET_ADMIN capability is not available. Outbound connection may not work properly." >&2
 fi
 
-# Set root password
-if [ -n "$PASS" ]; then
-    echo "root:$PASS" | chpasswd
-    echo "Root password set from PASS environment variable."
-else
-    echo "Warning: Environment variable PASS is not defined. Using empty password."
-    echo "root:" | chpasswd -e
-fi
-
 # Start the SSH daemon
 service ssh start
 

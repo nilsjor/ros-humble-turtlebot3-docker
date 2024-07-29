@@ -53,12 +53,30 @@ RUN apt-get update && apt-get install -y \
 # SSH overlay
 FROM netdiag-overlay AS ssh-overlay
 
+# Define the build argument 
+ARG HOSTNAME
+
 ## Install SSH server
 RUN apt-get update && apt-get install -y \
     openssh-server
 
 ## Set SSH authentication methods
 COPY sshd_config /etc/ssh/
+
+## Copy pre-generated SSH keys
+COPY --chmod=600 ssh_keys/${HOSTNAME}/ssh_host_rsa_key /etc/ssh/ssh_host_rsa_key
+COPY --chmod=600 ssh_keys/${HOSTNAME}/ssh_host_dsa_key /etc/ssh/ssh_host_dsa_key
+COPY --chmod=600 ssh_keys/${HOSTNAME}/ssh_host_ecdsa_key /etc/ssh/ssh_host_ecdsa_key
+COPY --chmod=600 ssh_keys/${HOSTNAME}/ssh_host_ed25519_key /etc/ssh/ssh_host_ed25519_key
+
+COPY --chmod=644 ssh_keys/${HOSTNAME}/ssh_host_rsa_key.pub /etc/ssh/ssh_host_rsa_key.pub
+COPY --chmod=644 ssh_keys/${HOSTNAME}/ssh_host_dsa_key.pub /etc/ssh/ssh_host_dsa_key.pub
+COPY --chmod=644 ssh_keys/${HOSTNAME}/ssh_host_ecdsa_key.pub /etc/ssh/ssh_host_ecdsa_key.pub
+COPY --chmod=644 ssh_keys/${HOSTNAME}/ssh_host_ed25519_key.pub /etc/ssh/ssh_host_ed25519_key.pub
+
+# Copy the public key to authorized_keys
+RUN mkdir -p /root/.ssh
+COPY --chmod=644 id_rsa.pub /root/.ssh/authorized_keys
 
 ## Expose SSH port
 EXPOSE 22

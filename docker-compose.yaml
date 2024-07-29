@@ -23,7 +23,7 @@ services:
         ROS_DISTRO: humble
       target: base
 
-  # Overlay image with ros-desktop
+  # Desktop image
   desktop:
     image: nilsjor/ros-humble-turtlebot:desktop-latest
     build:
@@ -31,22 +31,40 @@ services:
       dockerfile: Dockerfile
       target: desktop
 
-  # Overlay image with network diagnostics tools
-  husarnet:
-    image: nilsjor/ros-humble-turtlebot:husarnet-v1.2
+  # Husarnet-enabled edge server iomage
+  husarnet-edge:
+    image: nilsjor/ros-humble-turtlebot:husarnet-edge-server-v1.0
     build:
       context: .
       dockerfile: Dockerfile
       target: husarnet-overlay
+      args:
+        - HOSTNAME=edge-server
     environment:
-      - HUSARNET_HOSTNAME=husarnet-test
+      - HUSARNET_HOSTNAME=edge-server
+    env_file:
+      - secret.env
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+
+  # Husarnet-enabled device node image
+  husarnet-device:
+    image: nilsjor/ros-humble-turtlebot:husarnet-device-node-v1.0
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: husarnet-overlay
+      args:
+        - HOSTNAME=device-node
+    environment:
+      - HUSARNET_HOSTNAME=device-node
     env_file:
       - secret.env
     privileged: true
     cap_add:
       - NET_ADMIN
       
-
   # # Run test nodes
   # talker:
   #   container_name: talker
