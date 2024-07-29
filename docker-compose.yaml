@@ -33,7 +33,7 @@ services:
 
   # Husarnet-enabled edge server iomage
   husarnet-edge:
-    image: nilsjor/ros-humble-turtlebot:husarnet-edge-server-v1.0
+    image: nilsjor/ros-humble-turtlebot:husarnet-edge-server-v1.1
     build:
       context: .
       dockerfile: Dockerfile
@@ -50,7 +50,7 @@ services:
 
   # Husarnet-enabled device node image
   husarnet-device:
-    image: nilsjor/ros-humble-turtlebot:husarnet-device-node-v1.0
+    image: nilsjor/ros-humble-turtlebot:husarnet-device-node-v1.1
     build:
       context: .
       dockerfile: Dockerfile

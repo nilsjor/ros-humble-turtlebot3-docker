@@ -103,25 +103,16 @@ COPY --chmod=0755 ./husarnet-docker-healthcheck.sh /usr/bin/husarnet-docker-heal
 # Prepare CycloneDDS
 RUN curl -L https://github.com/husarnet/husarnet-dds/releases/download/v1.3.5/husarnet-dds-linux-amd64 -o /usr/local/bin/husarnet-dds
 RUN chmod +x /usr/local/bin/husarnet-dds
-ENV CYCLONEDDS_URI=file:///var/tmp/husarnet-cyclone.xml
+ENV CYCLONEDDS_URI=file:///var/lib/husarnet/cyclonedds.xml
 
+# Add "persistent" configuration files
+RUN mkdir -p /var/lib/husarnet
+COPY husarnet-configs/${HOSTNAME}/ /var/lib/husarnet/
+
+# Set entrypoint and healthcheck
 SHELL ["/usr/bin/bash", "-c"]
 HEALTHCHECK --interval=10s --timeout=65s --start-period=5s --retries=6 CMD husarnet-docker-healthcheck || exit 1
 CMD husarnet-docker
-
-# Ready-to-go images
-## Talker overlay
-# FROM ssh-overlay AS talker
-# CMD ["bash", "-c", "ros2 run demo_nodes_cpp talker"]
-
-# ## Listener overlay
-# FROM ssh-overlay AS listener
-# CMD ["bash", "-c", "ros2 run demo_nodes_cpp listener"]
-
-# ## Discovery server overlay
-# FROM ssh-overlay AS discovery-server
-# ENV ROS_DISCOVERY_SERVER=127.0.0.1:11811
-# CMD ["bash", "-c", "fastdds discovery --server-id 0"]
 
 # Desktop overlay
 FROM netdiag-overlay AS desktop
