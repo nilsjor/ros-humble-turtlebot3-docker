@@ -100,12 +100,13 @@ RUN apt install -y --no-install-recommends --no-install-suggests \
 COPY --chmod=0755 ./husarnet-docker.sh /usr/bin/husarnet-docker
 COPY --chmod=0755 ./husarnet-docker-healthcheck.sh /usr/bin/husarnet-docker-healthcheck
 
-# Prepare CycloneDDS
+# Prepare CycloneDDS + FastDDS
 RUN curl -L https://github.com/husarnet/husarnet-dds/releases/download/v1.3.5/husarnet-dds-linux-amd64 -o /usr/local/bin/husarnet-dds
 RUN chmod +x /usr/local/bin/husarnet-dds
 ENV CYCLONEDDS_URI=file:///var/lib/husarnet/cyclonedds.xml
+ENV FASTRTPS_DEFAULT_PROFILES_FILE=/var/lib/husarnet/fastdds-simple.xml
 
-# Add "persistent" configuration files
+# Add persistent Husarnet configuration files
 RUN mkdir -p /var/lib/husarnet
 COPY husarnet-configs/${HOSTNAME}/ /var/lib/husarnet/
 
