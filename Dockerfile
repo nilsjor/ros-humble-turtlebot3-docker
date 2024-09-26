@@ -34,6 +34,9 @@ ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 
 ## Source setup in subsequent bash shells
 RUN printf "\n# ROS2 setup\nsource /opt/ros/${ROS_DISTRO}/setup.bash\n" >> /root/.bashrc
+RUN printf "\nsource /ros2_ws/install/setup.bash\n" >> /root/.bashrc
+
+COPY install /ros2_ws/install
 
 # Networking overlay
 FROM base AS netdiag-overlay

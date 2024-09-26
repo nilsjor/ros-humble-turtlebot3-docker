@@ -15,7 +15,7 @@ services:
 
   # Base image
   base:
-    image: nilsjor/ros-humble-turtlebot:base-v1.3
+    image: nilsjor/ros-humble-turtlebot:base-v1.4
     build:
       context: .
       dockerfile: Dockerfile
@@ -31,9 +31,9 @@ services:
       dockerfile: Dockerfile
       target: desktop
 
-  # Husarnet-enabled edge server iomage
+  # Husarnet-enabled edge server image
   husarnet-edge:
-    image: nilsjor/ros-humble-turtlebot:husarnet-edge-server-v1.2
+    image: nilsjor/ros-humble-turtlebot:husarnet-edge-server-v1.3
     build:
       context: .
       dockerfile: Dockerfile
@@ -50,7 +50,7 @@ services:
 
   # Husarnet-enabled device node image
   husarnet-device:
-    image: nilsjor/ros-humble-turtlebot:husarnet-device-node-v1.2
+    image: nilsjor/ros-humble-turtlebot:husarnet-device-node-v1.3
     build:
       context: .
       dockerfile: Dockerfile
