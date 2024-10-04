@@ -1,56 +1,30 @@
+# syntax=docker/dockerfile:1.7-labs
 # Base Image for TurtleBot3
 ARG ROS_DISTRO=humble
 FROM ros:${ROS_DISTRO}-ros-base AS base
 
-## Install Cartographer
-RUN apt-get update && apt-get install -y \
-    ros-${ROS_DISTRO}-cartographer \
-    ros-${ROS_DISTRO}-cartographer-ros
-
-## Install Navigation2
-RUN apt-get update && apt-get install -y \
-    ros-${ROS_DISTRO}-navigation2 \
-    ros-${ROS_DISTRO}-nav2-bringup
-
-## Install TurtleBot3 packages
-RUN apt-get update && apt-get install -y \
-    ros-${ROS_DISTRO}-dynamixel-sdk \
-    ros-${ROS_DISTRO}-turtlebot3-msgs \
-    ros-${ROS_DISTRO}-turtlebot3
-
-## Install ros2 demo nodes
-RUN apt-get update && apt-get install -y \
-    ros-${ROS_DISTRO}-demo-nodes-cpp 
-
-## Install Cyclone DDS
-RUN apt-get update && apt-get install -y \
+## Install ROS2 additional packages
+RUN apt-get update && apt-get install -y --no-install-recommends --no-install-suggests \
+    ros-${ROS_DISTRO}-common-interfaces \
+    ros-${ROS_DISTRO}-demo-nodes-cpp \
+    ros-${ROS_DISTRO}-rmw-fastrtps-cpp \
     ros-${ROS_DISTRO}-rmw-cyclonedds-cpp
-
-## Set environment variables
-ENV ROS_DOMAIN_ID=30
-ENV TURTLEBOT3_MODEL=waffle_pi
-ENV LDS_MODEL=LDS-01
-ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
-
-## Source setup in subsequent bash shells
-RUN printf "\n# ROS2 setup\nsource /opt/ros/${ROS_DISTRO}/setup.bash\n" >> /root/.bashrc
-RUN printf "\nsource /ros2_ws/install/setup.bash\n" >> /root/.bashrc
-
-COPY install /ros2_ws/install
 
 # Networking overlay
 FROM base AS netdiag-overlay
 
 ## Install network diagnostics packages
-RUN apt-get update && apt-get install -y \
-    iputils* \
+RUN apt-get update && apt-get install -y --no-install-recommends --no-install-suggests \
+    iputils-ping \
+    iputils-clockdiff \
+    iputils-arping \
     traceroute \
-    net-tools \
-    dnsutils \
+    mtr-tiny \
     iproute2 \
     nmap \
     tcpdump \
     iperf3 \
+    wget \
     curl
 
 # SSH overlay
@@ -60,26 +34,19 @@ FROM netdiag-overlay AS ssh-overlay
 ARG HOSTNAME
 
 ## Install SSH server
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends --no-install-suggests \
     openssh-server
 
 ## Set SSH authentication methods
 COPY sshd_config /etc/ssh/
 
 ## Copy pre-generated SSH keys
-COPY --chmod=600 ssh_keys/${HOSTNAME}/ssh_host_rsa_key /etc/ssh/ssh_host_rsa_key
-COPY --chmod=600 ssh_keys/${HOSTNAME}/ssh_host_dsa_key /etc/ssh/ssh_host_dsa_key
-COPY --chmod=600 ssh_keys/${HOSTNAME}/ssh_host_ecdsa_key /etc/ssh/ssh_host_ecdsa_key
-COPY --chmod=600 ssh_keys/${HOSTNAME}/ssh_host_ed25519_key /etc/ssh/ssh_host_ed25519_key
+COPY --chmod=600 --exclude=ssh_keys/*/*.pub ssh_keys/${HOSTNAME}/* /etc/ssh/
+COPY --chmod=644 ssh_keys/${HOSTNAME}/*.pub /etc/ssh/
 
-COPY --chmod=644 ssh_keys/${HOSTNAME}/ssh_host_rsa_key.pub /etc/ssh/ssh_host_rsa_key.pub
-COPY --chmod=644 ssh_keys/${HOSTNAME}/ssh_host_dsa_key.pub /etc/ssh/ssh_host_dsa_key.pub
-COPY --chmod=644 ssh_keys/${HOSTNAME}/ssh_host_ecdsa_key.pub /etc/ssh/ssh_host_ecdsa_key.pub
-COPY --chmod=644 ssh_keys/${HOSTNAME}/ssh_host_ed25519_key.pub /etc/ssh/ssh_host_ed25519_key.pub
-
-# Copy the public key to authorized_keys
+## Copy the public key(s) to authorized_keys
 RUN mkdir -p /root/.ssh
-COPY --chmod=644 id_rsa.pub /root/.ssh/authorized_keys
+COPY --chmod=644 ssh_keys/authorized_keys /root/.ssh/authorized_keys
 
 ## Expose SSH port
 EXPOSE 22
@@ -93,32 +60,102 @@ CMD ["bash"]
 # Husarnet overlay
 FROM ssh-overlay AS husarnet-overlay
 
-# Install Husarnet
+## Install Husarnet
 RUN apt-get update -y
 RUN curl -L https://github.com/husarnet/husarnet/releases/download/v2.0.180/husarnet-linux-amd64.deb -o /tmp/husarnet.deb
-RUN apt install -y --no-install-recommends --no-install-suggests \
+RUN apt-get install -y --no-install-recommends --no-install-suggests \
     /tmp/husarnet.deb && rm -f /tmp/husarnet.deb
 
-# Add Husarnet scripts
+## Add Husarnet scripts
 COPY --chmod=0755 ./husarnet-docker.sh /usr/bin/husarnet-docker
 COPY --chmod=0755 ./husarnet-docker-healthcheck.sh /usr/bin/husarnet-docker-healthcheck
 
-# Prepare CycloneDDS + FastDDS
+## Prepare CycloneDDS + FastDDS
 RUN curl -L https://github.com/husarnet/husarnet-dds/releases/download/v1.3.5/husarnet-dds-linux-amd64 -o /usr/local/bin/husarnet-dds
 RUN chmod +x /usr/local/bin/husarnet-dds
-ENV CYCLONEDDS_URI=file:///var/lib/husarnet/cyclonedds.xml
+ENV CYCLONEDDS_URI=/var/lib/husarnet/cyclonedds.xml
 ENV FASTRTPS_DEFAULT_PROFILES_FILE=/var/lib/husarnet/fastdds-simple.xml
+ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 
-# Add persistent Husarnet configuration files
+## Add persistent Husarnet configuration files
 RUN mkdir -p /var/lib/husarnet
 COPY husarnet-configs/${HOSTNAME}/ /var/lib/husarnet/
 
-# Set entrypoint and healthcheck
+## Set entrypoint and healthcheck
 SHELL ["/usr/bin/bash", "-c"]
 HEALTHCHECK --interval=10s --timeout=65s --start-period=5s --retries=6 CMD husarnet-docker-healthcheck || exit 1
 CMD husarnet-docker
 
-# Desktop overlay
-FROM netdiag-overlay AS desktop
-RUN apt-get update && apt-get install -y \
-    ros-${ROS_DISTRO}-desktop 
+# TurtleBot3 build overlay
+FROM husarnet-overlay AS build-overlay
+
+ENV ROS_WS_PATH=/root/ros2_ws
+
+## Install low-level dependencies needed for build
+RUN apt-get update && apt-get install -y --no-install-recommends --no-install-suggests \
+    ros-${ROS_DISTRO}-turtlebot3-msgs \
+    ros-${ROS_DISTRO}-dynamixel-sdk \
+    ros-${ROS_DISTRO}-hls-lfcd-lds-driver
+
+## Install build tools
+RUN apt-get update && apt-get install -y --no-install-recommends --no-install-suggests \
+    python3-colcon-common-extensions \
+    build-essential
+
+## Create workspace and clone the repository
+RUN mkdir -p ${ROS_WS_PATH}/src && git clone https://github.com/nilsjor/turtlebot3.git \
+    --sparse \
+    --depth=1 \
+    --single-branch \
+    --branch=humble-devel \
+    --filter=blob:none \
+    ${ROS_WS_PATH}/src/turtlebot3
+
+## Configure which packages to include using sparse-checkout
+RUN cd ${ROS_WS_PATH}/src/turtlebot3 && git sparse-checkout set \
+    turtlebot3_bringup \
+    turtlebot3_cartographer \
+    turtlebot3_description \
+    turtlebot3_navigation2 \
+    turtlebot3_node \
+    turtlebot3_rviz2 \
+    turtlebot3_support 
+
+## Build the workspace
+RUN source /opt/ros/${ROS_DISTRO}/setup.bash && cd ${ROS_WS_PATH} && colcon build
+
+# TurtleBot3 server overlay
+FROM husarnet-overlay AS server-overlay
+
+## Install server-side packages
+RUN apt-get update && apt-get install -y --no-install-recommends --no-install-suggests \
+    ros-${ROS_DISTRO}-teleop-twist-joy \
+    ros-${ROS_DISTRO}-nav2-bringup \
+    ros-${ROS_DISTRO}-cartographer-ros \
+    ros-${ROS_DISTRO}-rviz2 \
+    ros-${ROS_DISTRO}-turtlebot3-simulations
+
+## Copy the packages build from source
+COPY --from=build-overlay \
+    --exclude=${ROS_WS_PATH}/install/turtlebot3_bringup \
+    --exclude=${ROS_WS_PATH}/install/turtlebot3_node \
+    ${ROS_WS_PATH}/install ${ROS_WS_PATH}/install
+COPY --from=build-overlay /root/.bash_aliases /root/.bash_aliases
+
+# TurtleBot3 device overlay
+FROM husarnet-overlay AS turtlebot-overlay
+
+## Install low-level dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends --no-install-suggests \
+    ros-${ROS_DISTRO}-turtlebot3-msgs \
+    ros-${ROS_DISTRO}-dynamixel-sdk \
+    ros-${ROS_DISTRO}-hls-lfcd-lds-driver
+
+## Copy the workspace
+COPY --from=build-overlay \
+    --exclude=${ROS_WS_PATH}/install/turtlebot3_cartographer \
+    --exclude=${ROS_WS_PATH}/install/turtlebot3_navigation2 \
+    --exclude=${ROS_WS_PATH}/install/turtlebot3_rviz2 \
+    --exclude=${ROS_WS_PATH}/install/turtlebot3_support \
+    ${ROS_WS_PATH}/install ${ROS_WS_PATH}/install
+COPY --from=build-overlay /root/.bash_aliases /root/.bash_aliases

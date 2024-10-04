@@ -6,7 +6,7 @@ KbdInteractiveAuthentication no
 UsePAM no
 ChallengeResponseAuthentication no
 KerberosAuthentication no
-X11Forwarding no
+X11Forwarding yes
 PrintMotd no
 AcceptEnv LANG LC_*
 Subsystem sftp /usr/lib/openssh/sftp-server
