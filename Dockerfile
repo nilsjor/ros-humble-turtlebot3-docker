@@ -86,10 +86,11 @@ SHELL ["/usr/bin/bash", "-c"]
 HEALTHCHECK --interval=10s --timeout=65s --start-period=5s --retries=6 CMD husarnet-docker-healthcheck || exit 1
 CMD husarnet-docker
 
+# TODO: Find some way to let the build, server, and device layers share this env-var
+ENV ROS_WS_PATH=/root/ros2_ws
+
 # TurtleBot3 build overlay
 FROM husarnet-overlay AS build-overlay
-
-ENV ROS_WS_PATH=/root/ros2_ws
 
 ## Install low-level dependencies needed for build
 RUN apt-get update && apt-get install -y --no-install-recommends --no-install-suggests \
