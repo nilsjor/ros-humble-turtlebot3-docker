@@ -23,21 +23,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends --no-install-su
     wget \
     curl
 
-## Prepare CycloneDDS + FastDDS for Husarnet
-ENV CYCLONEDDS_URI=$HOME/husarnet/cyclonedds.xml
-ENV FASTRTPS_DEFAULT_PROFILES_FILE=$HOME/husarnet/fastdds-simple.xml
-ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
-
-## Install Husarnet-DDS
-RUN curl -L https://github.com/husarnet/husarnet-dds/releases/download/v1.3.5/husarnet-dds-linux-$(dpkg --print-architecture) -o /usr/local/bin/husarnet-dds
-RUN chmod +x /usr/local/bin/husarnet-dds
-
 # Prepare workspace path for subsequent layers
 ARG ROS_WS_PATH=/root/ros2_ws
 ENV ROS_WS_PATH=${ROS_WS_PATH}
 
 # TurtleBot3 build overlay
 FROM base AS build-overlay
+
+## Prepare CycloneDDS + FastDDS for Husarnet
+ENV CYCLONEDDS_URI=file:///var/tmp/husarnet-dds/husarnet-cyclonedds.xml
+ENV FASTRTPS_DEFAULT_PROFILES_FILE=/var/tmp/husarnet-dds/husarnet-fastdds.xml
+ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 
 ## Install low-level dependencies needed for build
 RUN apt-get update && apt-get install -y --no-install-recommends --no-install-suggests \
@@ -72,6 +68,9 @@ RUN cd ${ROS_WS_PATH}/src/turtlebot3 && git sparse-checkout set \
 ## Build the workspace
 SHELL ["/bin/bash", "-c"]
 RUN source /opt/ros/${ROS_DISTRO}/setup.bash && cd ${ROS_WS_PATH} && colcon build
+
+# Add a dummy command to keep the container running
+CMD ["bash", "-c", "trap : TERM INT; sleep infinity & wait"]
 
 # SSH overlay
 FROM base AS ssh-overlay
@@ -117,6 +116,10 @@ RUN apt-get install -y --no-install-recommends --no-install-suggests \
 ## Add Husarnet scripts
 COPY --chmod=0755 ./husarnet-docker.sh /usr/bin/husarnet-docker
 COPY --chmod=0755 ./husarnet-docker-healthcheck.sh /usr/bin/husarnet-docker-healthcheck
+
+## Install Husarnet-DDS
+RUN curl -L https://github.com/husarnet/husarnet-dds/releases/download/v1.3.5/husarnet-dds-linux-$(dpkg --print-architecture) -o /usr/local/bin/husarnet-dds
+RUN chmod +x /usr/local/bin/husarnet-dds
 
 ## Set entrypoint and healthcheck
 SHELL ["/usr/bin/bash", "-c"]

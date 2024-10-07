@@ -31,19 +31,22 @@ services:
 
   # Husarnet-enabled device node image
   husarnet-device:
-    image: nilsjor/ros-humble-turtlebot:device-node-husarnet-v2.3
+    image: nilsjor/ros-humble-turtlebot:device-node-v2.3
     build:
       context: .
       dockerfile: Dockerfile
-      platforms: 
+      # platforms: 
       # - linux/arm64
-      - linux/amd64
-      target: device-overlay
+      # - linux/amd64
+      target: build-overlay
       args:
         - HOSTNAME=turtlebot
     env_file:
       - secret.env
     privileged: true
     network_mode: "host"
+    volumes:
+      - ~/appdata/husarnet-config:/var/lib/husarnet
+      - /var/tmp/husarnet-dds:/var/tmp/husarnet-dds
     cap_add:
       - NET_ADMIN
