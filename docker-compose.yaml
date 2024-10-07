@@ -13,79 +13,37 @@
 
 services:
 
-  # Base image
-  base:
-    image: nilsjor/ros-humble-turtlebot:base-v2.0
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        - ROS_DISTRO=humble
-      target: base
-
   # Husarnet-enabled edge server image
   husarnet-edge:
-    image: nilsjor/ros-humble-turtlebot:husarnet-edge-server-v2.0
+    image: nilsjor/ros-humble-turtlebot:edge-server-husarnet-v2.3
     build:
       context: .
       dockerfile: Dockerfile
       target: server-overlay
       args:
         - HOSTNAME=edge-server
-    environment:
-      - HUSARNET_HOSTNAME=edge-server
     env_file:
       - secret.env
     privileged: true
+    network_mode: "host"
     cap_add:
       - NET_ADMIN
 
   # Husarnet-enabled device node image
   husarnet-device:
-    image: nilsjor/ros-humble-turtlebot:husarnet-device-node-v2.0
+    image: nilsjor/ros-humble-turtlebot:device-node-husarnet-v2.3
     build:
       context: .
       dockerfile: Dockerfile
-      target: build-overlay
+      platforms: 
+      # - linux/arm64
+      - linux/amd64
+      target: device-overlay
       args:
         - HOSTNAME=turtlebot
-    environment:
-      - HUSARNET_HOSTNAME=turtlebot
     env_file:
       - secret.env
     privileged: true
+    network_mode: "host"
     cap_add:
       - NET_ADMIN
-      
-  # # Run test nodes
-  # talker:
-  #   container_name: talker
-  #   image: nilsjor/ros-humble-turtlebot:talker-v0.7
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #     target: talker
-  #   environment:
-  #     - ROS_DISCOVERY_SERVER=discovery:11811
-  #   depends_on:
-  #     - discovery
-
-  # listener:
-  #   container_name: listener
-  #   image: nilsjor/ros-humble-turtlebot:listener-v0.7
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #     target: listener
-  #   environment:
-  #     - ROS_DISCOVERY_SERVER=discovery:11811
-  #   depends_on:
-  #     - discovery
-
-  # discovery:
-  #   container_name: discovery
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #     target: discovery-server
-  #   image: nilsjor/ros-humble-turtlebot:discovery-v0.8
