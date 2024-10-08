@@ -15,7 +15,7 @@ services:
 
   # Husarnet-enabled edge server image
   husarnet-edge:
-    image: nilsjor/ros-humble-turtlebot:edge-server-husarnet-v2.3
+    image: nilsjor/ros-humble-turtlebot:edge-server-husarnet-v2.4
     build:
       context: .
       dockerfile: Dockerfile
@@ -29,16 +29,16 @@ services:
     cap_add:
       - NET_ADMIN
 
-  # Husarnet-enabled device node image
+  # TurtleBot3 image without intergrated husarnet
   husarnet-device:
-    image: nilsjor/ros-humble-turtlebot:device-node-v2.3
+    image: nilsjor/ros-humble-turtlebot:build-tools-v2.4
     build:
       context: .
       dockerfile: Dockerfile
       # platforms: 
       # - linux/arm64
       # - linux/amd64
-      target: build-overlay
+      target: colcon-overlay
       args:
         - HOSTNAME=turtlebot
     env_file:
@@ -46,7 +46,7 @@ services:
     privileged: true
     network_mode: "host"
     volumes:
-      - ~/appdata/husarnet-config:/var/lib/husarnet
-      - /var/tmp/husarnet-dds:/var/tmp/husarnet-dds
+      - ~/husarnet-dds:/var/lib/husarnet
+      - ~/ros2_ws:/root/ros2_ws
     cap_add:
       - NET_ADMIN
