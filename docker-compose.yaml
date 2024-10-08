@@ -14,7 +14,7 @@
 services:
 
   # Husarnet-enabled edge server image
-  husarnet-edge:
+  edge-server-husarnet:
     image: nilsjor/ros-humble-turtlebot:edge-server-husarnet-v2.4
     build:
       context: .
@@ -25,13 +25,14 @@ services:
     env_file:
       - secret.env
     privileged: true
-    network_mode: "host"
+    network_mode: host
     cap_add:
       - NET_ADMIN
 
-  # TurtleBot3 image without intergrated husarnet
-  husarnet-device:
-    image: nilsjor/ros-humble-turtlebot:build-tools-v2.4
+  # Development image without Husarnet
+  dev:
+    container_name: ros-humble-dev
+    image: nilsjor/ros-humble-turtlebot:dev-latest
     build:
       context: .
       dockerfile: Dockerfile
@@ -42,10 +43,20 @@ services:
       args:
         - HOSTNAME=turtlebot
         - ROS_WS_PATH=/root/ros2_ws
+    # Interactive shell
+    stdin_open: true
+    tty: true
+    working_dir: /root
+    command: "sleep infinity & wait"
+    hostname: turtlebot-docker
+    # Networking and inter-process communication
+    network_mode: host
+    ipc: host
+    # Add device and network capabilites
     privileged: true
-    network_mode: "host"
+    # Mount workspace 
     volumes:
       - ~/husarnet-dds:/var/lib/husarnet
       - ~/ros2_ws:/root/ros2_ws
-    cap_add:
-      - NET_ADMIN
+    # Run indefinitely
+    restart: unless-stopped
