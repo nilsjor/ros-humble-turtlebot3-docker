@@ -41,8 +41,7 @@ services:
       target: colcon-overlay
       args:
         - HOSTNAME=turtlebot
-    env_file:
-      - secret.env
+        - ROS_WS_PATH=/root/ros2_ws
     privileged: true
     network_mode: "host"
     volumes:

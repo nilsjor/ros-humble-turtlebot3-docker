@@ -26,19 +26,32 @@ RUN apt-get update && apt-get install -y --no-install-recommends --no-install-su
     wget \
     curl
 
-## Prepare workspace path for subsequent layers
-ARG ROS_WS_PATH=/root/ros2_ws
-ENV ROS_WS_PATH=${ROS_WS_PATH}
+## Prepare environment variables for subsequent layers
+### TurtleBot3-specific
+ENV ROS_DOMAIN_ID=30
+ENV TURTLEBOT3_MODEL=waffle_pi
+ENV LDS_MODEL=LDS-01
 
-# ---------------------------------------- colcon overlay ----------------------------------------
-# Images based of this layer will contain the base packages, including netdiag, and build tools.
-# This image is intended for development work, and does not feature built-in Husarnet or SSH.
-FROM base AS colcon-overlay
-
-## Prepare DDS for Husarnet (persisted in `.bash_aliases` during build)
+### DDS provider
 ENV CYCLONEDDS_URI=file:///var/lib/husarnet/cyclonedds.xml
 ENV FASTRTPS_DEFAULT_PROFILES_FILE=/var/lib/husarnet/fastdds-simple.xml
 ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+
+### Overlay workspace path
+ARG ROS_WS_PATH=/root/ros2_ws
+ENV ROS_WS_PATH=${ROS_WS_PATH}
+
+## Update entrypoint
+COPY --chmod=0755 ./ros_entrypoint.sh /ros_entrypoint.sh
+ENTRYPOINT ["/ros_entrypoint.sh"]
+
+## Source setup in subsequent bash shells
+RUN printf "\n# ROS2 setup\nsource /ros_entrypoint.sh\n" >> /root/.bashrc
+
+# ---------------------------------------- colcon overlay ----------------------------------------
+# Images based of this layer will contain the base packages (including net-diag) plus build tools.
+# This image is intended for development work, and does not feature built-in Husarnet or SSH.
+FROM base AS colcon-overlay
 
 ## Install low-level dependencies needed for build (and operation)
 RUN apt-get update && apt-get install -y --no-install-recommends --no-install-suggests \
