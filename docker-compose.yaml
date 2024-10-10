@@ -19,20 +19,43 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: server-husarnet-overlay
+      args:
+        - ROS_WS_PATH=/root/ros2_ws
+        - HOSTNAME=edge-server  # Determines which SSH keys to use
+    env_file:
+      - secret.env  # Used to connect to Husarnet
+
+  # Server image without Husarnet
+  server:
+    container_name: ros-humble-dev
+    image: nilsjor/ros-humble-turtlebot:server-latest
+    build:
+      context: .
+      dockerfile: Dockerfile
       target: server-overlay
       args:
-        - HOSTNAME=edge-server
-    env_file:
-      - secret.env
-    privileged: true
+        - ROS_WS_PATH=/root/ros2_ws
+    # Interactive shell
+    working_dir: /root
+    command: "sleep infinity & wait"
+    hostname: damek-edge-docker
+    # Networking and inter-process communication
     network_mode: host
-    cap_add:
-      - NET_ADMIN
+    ipc: host
+    # Add device and network capabilites
+    privileged: true
+    # Mount workspace 
+    volumes:
+      - ~/husarnet-dds:/var/lib/husarnet
+      - ~/ros2_ws:/root/ros2_ws
+    # Run indefinitely
+    restart: unless-stopped
 
   # Development image without Husarnet
-  dev:
+  device:
     container_name: ros-humble-dev
-    image: nilsjor/ros-humble-turtlebot:dev-latest
+    image: nilsjor/ros-humble-turtlebot:device-latest
     build:
       context: .
       dockerfile: Dockerfile
@@ -41,11 +64,8 @@ services:
       # - linux/amd64
       target: colcon-overlay
       args:
-        - HOSTNAME=turtlebot
         - ROS_WS_PATH=/root/ros2_ws
     # Interactive shell
-    stdin_open: true
-    tty: true
     working_dir: /root
     command: "sleep infinity & wait"
     hostname: turtlebot-docker

@@ -45,13 +45,15 @@ ENV ROS_WS_PATH=${ROS_WS_PATH}
 COPY --chmod=0755 ./ros_entrypoint.sh /ros_entrypoint.sh
 ENTRYPOINT ["/ros_entrypoint.sh"]
 
-## Source setup in subsequent bash shells
-RUN printf "\n# ROS2 setup\nsource /ros_entrypoint.sh\n" >> /root/.bashrc
-
 # ---------------------------------------- colcon overlay ----------------------------------------
 # Images based of this layer will contain the base packages (including net-diag) plus build tools.
 # This image is intended for development work, and does not feature built-in Husarnet or SSH.
 FROM base AS colcon-overlay
+
+## Install build tools
+RUN apt-get update && apt-get install -y --no-install-recommends --no-install-suggests \
+    python3-colcon-common-extensions \
+    build-essential
 
 ## Install low-level dependencies needed for build (and operation)
 RUN apt-get update && apt-get install -y --no-install-recommends --no-install-suggests \
@@ -59,10 +61,24 @@ RUN apt-get update && apt-get install -y --no-install-recommends --no-install-su
     ros-${ROS_DISTRO}-dynamixel-sdk \
     ros-${ROS_DISTRO}-hls-lfcd-lds-driver
 
+# ---------------------------------------- Server overlay ----------------------------------------
+# This layer adds the server-side packages to the image, including the navigation stack.
+# This image is intended for development work, and does not feature built-in Husarnet or SSH.
+FROM base AS server-overlay
+
 ## Install build tools
 RUN apt-get update && apt-get install -y --no-install-recommends --no-install-suggests \
     python3-colcon-common-extensions \
     build-essential
+
+## Install server-side packages
+RUN apt-get update && apt-get install -y --no-install-recommends --no-install-suggests \
+    ros-${ROS_DISTRO}-teleop-twist-joy \
+    ros-${ROS_DISTRO}-nav2-bringup \
+    ros-${ROS_DISTRO}-cartographer-ros \
+    ros-${ROS_DISTRO}-rviz2 \
+    ros-${ROS_DISTRO}-turtlebot3-msgs \
+    ros-${ROS_DISTRO}-turtlebot3-simulations
 
 # ---------------------------------------- Build overlay -----------------------------------------
 # Add a new layer in which the most recent workspace is pre-compiled. 
@@ -158,7 +174,7 @@ CMD husarnet-docker
 # ---------------------------------------- Server overlay ----------------------------------------
 # This layer adds the server-side packages to the image, including the navigation stack.
 # This image is based on the Husarnet overlay, and is intended to be run as a server.
-FROM husarnet-overlay AS server-overlay
+FROM husarnet-overlay AS server-husarnet-overlay
 
 ## Install server-side packages
 RUN apt-get update && apt-get install -y --no-install-recommends --no-install-suggests \
@@ -180,7 +196,7 @@ COPY --from=build-overlay /root/.bash_aliases /root/.bash_aliases
 # This layer adds the device-side packages to the image; the low-level drivers and bringup stack.
 # Images based on this layer are intended to be run as a self-contained Turtlebot3 device, and
 # includes the Husarnet overlay for networking. Not sure if this is ever needed...
-FROM husarnet-overlay AS device-overlay
+FROM husarnet-overlay AS device-husarnet-overlay
 
 ## Install low-level dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends --no-install-suggests \
