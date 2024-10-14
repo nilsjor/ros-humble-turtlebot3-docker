@@ -46,14 +46,25 @@ COPY --chmod=0755 ./ros_entrypoint.sh /ros_entrypoint.sh
 ENTRYPOINT ["/ros_entrypoint.sh"]
 
 # ---------------------------------------- colcon overlay ----------------------------------------
-# Images based of this layer will contain the base packages (including net-diag) plus build tools.
-# This image is intended for development work, and does not feature built-in Husarnet or SSH.
+# This layer provides tools for building custom ROS packages using the colcon build system.
+# This is an intermediate layer, and images should be built on top of it, not directly from it.
 FROM base AS colcon-overlay
 
-## Install build tools
+## Install fundamental build tools
 RUN apt-get update && apt-get install -y --no-install-recommends --no-install-suggests \
     python3-colcon-common-extensions \
+    python3-colcon-clean \
     build-essential
+
+## Install additional colcon extensions, such as Meson and Bazel support
+# RUN apt-get update && apt-get install -y --no-install-recommends --no-install-suggests \
+#     python3-colcon-bazel \
+#     python3-colcon-meson
+
+# ---------------------------------------- Device overlay ----------------------------------------
+# This layer adds the the low-level drivers and bringup stack, also needed for building the rest.
+# This image is intended for development work, and does not feature built-in Husarnet or SSH.
+FROM colcon-overlay AS device-overlay
 
 ## Install low-level dependencies needed for build (and operation)
 RUN apt-get update && apt-get install -y --no-install-recommends --no-install-suggests \
@@ -64,12 +75,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends --no-install-su
 # ---------------------------------------- Server overlay ----------------------------------------
 # This layer adds the server-side packages to the image, including the navigation stack.
 # This image is intended for development work, and does not feature built-in Husarnet or SSH.
-FROM base AS server-overlay
-
-## Install build tools
-RUN apt-get update && apt-get install -y --no-install-recommends --no-install-suggests \
-    python3-colcon-common-extensions \
-    build-essential
+FROM colcon-overlay AS server-overlay
 
 ## Install server-side packages
 RUN apt-get update && apt-get install -y --no-install-recommends --no-install-suggests \
@@ -83,7 +89,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends --no-install-su
 # ---------------------------------------- Build overlay -----------------------------------------
 # Add a new layer in which the most recent workspace is pre-compiled. 
 # This layer will only be used to copy the pre-compiled workspace into the "Husarnet" images.
-FROM colcon-overlay AS build-overlay
+FROM device-overlay AS build-overlay
 
 ## Create workspace and clone the repository
 RUN mkdir -p ${ROS_WS_PATH}/src && git clone https://github.com/nilsjor/turtlebot3.git \

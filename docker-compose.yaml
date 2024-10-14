@@ -37,7 +37,7 @@ services:
       args:
         - ROS_WS_PATH=/root/ros2_ws
     # Interactive shell
-    working_dir: /root
+    working_dir: /root/ros2_ws
     command: "sleep infinity & wait"
     hostname: damek-edge-docker
     # Networking and inter-process communication
@@ -62,11 +62,11 @@ services:
       # platforms: 
       # - linux/arm64
       # - linux/amd64
-      target: colcon-overlay
+      target: device-overlay
       args:
         - ROS_WS_PATH=/root/ros2_ws
     # Interactive shell
-    working_dir: /root
+    working_dir: /root/ros2_ws
     command: "sleep infinity & wait"
     hostname: turtlebot-docker
     # Networking and inter-process communication
@@ -78,5 +78,6 @@ services:
     volumes:
       - ~/husarnet-dds:/var/lib/husarnet
       - ~/ros2_ws:/root/ros2_ws
+      - ~/ros2_bags:/root/recordings
     # Run indefinitely
     restart: unless-stopped
