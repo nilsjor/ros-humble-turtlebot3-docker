@@ -19,10 +19,8 @@ alias attach="sudo modprobe vhci_hcd && sudo usbip --tcp-port 3241 \
     \`usbip --tcp-port 3241 list --remote localhost \
     | grep $JOY_HARDWARE_ID | grep -oP '\d+-\d+'\`"
 alias detach="sudo usbip --tcp-port 3241 detach --port 0"
-
-# Add compound alias for joypad
 alias joy="(attach && trap 'detach' EXIT && teleop)"
 
-# Add command for running ros2 commands (including aliases) through docker
-ros2() { docker exec -it ros-humble-dev /ros_entrypoint.sh bash -c "ros2 $*"; }
+# Transparent wrappers for running ros2 commands (including aliases) through docker
+ros2() { docker exec -it ros-humble-dev /ros_entrypoint.sh bash ${*:+-c "ros2 $*"}; }
 colcon() { docker exec -it ros-humble-dev /ros_entrypoint.sh bash -c "colcon $*"; }

@@ -45,6 +45,9 @@ ENV ROS_WS_PATH=${ROS_WS_PATH}
 COPY --chmod=0755 ./ros_entrypoint.sh /ros_entrypoint.sh
 ENTRYPOINT ["/ros_entrypoint.sh"]
 
+## Source setup in subsequent bash shells
+RUN printf "\n# ROS2 setup\nsource /ros_entrypoint.sh\n" >> /root/.bashrc
+
 # ---------------------------------------- colcon overlay ----------------------------------------
 # This layer provides tools for building custom ROS packages using the colcon build system.
 # This is an intermediate layer, and images should be built on top of it, not directly from it.
