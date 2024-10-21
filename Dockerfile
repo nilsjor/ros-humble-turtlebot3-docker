@@ -45,7 +45,7 @@ ENV ROS_WS_PATH=${ROS_WS_PATH}
 COPY --chmod=0755 ./ros_entrypoint.sh /ros_entrypoint.sh
 ENTRYPOINT ["/ros_entrypoint.sh"]
 
-## Source setup in subsequent bash shells
+## Source setup in subsequent _interactive_ bash shells
 RUN printf "\n# ROS2 setup\nsource /ros_entrypoint.sh\n" >> /root/.bashrc
 
 # ---------------------------------------- colcon overlay ----------------------------------------

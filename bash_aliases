@@ -4,7 +4,7 @@ export FASTRTPS_DEFAULT_PROFILES_FILE=$HOME/husarnet-dds/fastdds-simple.xml
 
 # Add aliases for the overlay workspace
 alias build="colcon build --symlink-install"
-alias clean="colcon clean packages workspace -y"
+alias clean="colcon clean workspace -y"
 
 # Add aliases for packages
 alias bringup="ros2 launch turtlebot3_bringup robot.launch.py"
@@ -21,6 +21,6 @@ alias attach="sudo modprobe vhci_hcd && sudo usbip --tcp-port 3241 \
 alias detach="sudo usbip --tcp-port 3241 detach --port 0"
 alias joy="(attach && trap 'detach' EXIT && teleop)"
 
-# Transparent wrappers for running ros2 commands (including aliases) through docker
-ros2() { docker exec -it ros-humble-dev /ros_entrypoint.sh bash ${*:+-c "ros2 $*"}; }
-colcon() { docker exec -it ros-humble-dev /ros_entrypoint.sh bash -c "colcon $*"; }
+# Wrappers for transparently running ros2 commands (including aliases) through docker
+ros2() { docker exec -it ros-humble-dev bash ${*:+-ic "ros2 $*"}; }
+colcon() { docker exec -it ros-humble-dev bash -ic "colcon $*"; }
