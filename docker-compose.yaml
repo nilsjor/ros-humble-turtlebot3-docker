@@ -39,7 +39,10 @@ services:
     # Interactive shell
     working_dir: /root/ros2_ws
     command: "sleep infinity & wait"
-    hostname: damek-edge-docker
+    # X11 forwarding (hostname be same as host)
+    hostname: ${HOSTNAME}
+    environment:
+      - DISPLAY=${DISPLAY}
     # Networking and inter-process communication
     network_mode: host
     ipc: host
@@ -49,6 +52,10 @@ services:
     volumes:
       - ~/husarnet-dds:/var/lib/husarnet
       - ~/ros2_ws:/root/ros2_ws
+      - ~/ros2_bags:/root/recordings
+    # Also needed for X11 to work
+      - ~/.Xauthority:/root/.Xauthority
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
     # Run indefinitely
     restart: unless-stopped
 
@@ -68,7 +75,10 @@ services:
     # Interactive shell
     working_dir: /root/ros2_ws
     command: "sleep infinity & wait"
-    hostname: turtlebot-docker
+    # X11 forwarding (must share hostname)
+    hostname: ${HOSTNAME}
+    environment:
+      - DISPLAY=${DISPLAY}
     # Networking and inter-process communication
     network_mode: host
     ipc: host
@@ -79,5 +89,8 @@ services:
       - ~/husarnet-dds:/var/lib/husarnet
       - ~/ros2_ws:/root/ros2_ws
       - ~/ros2_bags:/root/recordings
+    # Also needed for X11 to work
+      - ~/.Xauthority:/root/.Xauthority
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
     # Run indefinitely
     restart: unless-stopped
