@@ -1,7 +1,3 @@
-# Set up DDS for use with Husarnet VPN
-export CYCLONEDDS_URI=file://$HOME/husarnet-dds/cyclonedds.xml
-export FASTRTPS_DEFAULT_PROFILES_FILE=$HOME/husarnet-dds/fastdds-simple.xml
-
 # Add aliases for the overlay workspace
 alias build="colcon build --symlink-install"
 alias clean="colcon clean workspace -y"
@@ -24,3 +20,7 @@ alias joy="(attach && trap 'detach' EXIT && teleop)"
 # Wrappers for transparently running ros2 commands (including aliases) through docker
 ros2() { docker exec -it ros-humble-dev bash ${*:+-ic "ros2 $*"}; }
 colcon() { docker exec -it ros-humble-dev bash -ic "colcon $*"; }
+
+# Other aliases for working in CLI mode
+alias iperf="iperf3"
+alias stop="pkill -SIGINT"
