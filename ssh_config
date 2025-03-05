@@ -1,0 +1,31 @@
+# Hypervisor server for Damek Edge
+Host damek-hypervisor
+  HostName edgemain.damek.kth.se
+  User nilsjor  
+  Port 22687
+
+# Damek Edge (direct access)
+Host damek-edge.public
+  ProxyCommand ssh -q -W %h:%p damek-hypervisor
+  HostName 192.168.122.191
+  User nilsj
+
+# Damek Edge (Husarnet)
+Host damek-edge
+  HostName damek-edge
+  User nilsj
+
+# TurtleBot5G (Husarnet)
+Host turtlebot
+  HostName turtlebot
+  User nilsjor
+
+# Edge server (Husarnet)
+Host edge-server
+  HostName edge-server
+  User root
+
+# Device node (Husarnet)
+Host device-node
+  HostName device-node
+  User root
