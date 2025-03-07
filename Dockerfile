@@ -196,8 +196,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends --no-install-su
 
 ## Copy the packages build from source
 COPY --from=build-overlay \
-    --exclude=${ROS_WS_PATH}/install/turtlebot3_bringup \
-    --exclude=${ROS_WS_PATH}/install/turtlebot3_node \
+    --exclude=${ROS_WS_PATH}/install/turtlebot3_cartographer \
+    --exclude=${ROS_WS_PATH}/install/turtlebot3_navigation2 \
+    --exclude=${ROS_WS_PATH}/install/turtlebot3_rviz2 \
+    --exclude=${ROS_WS_PATH}/install/turtlebot3_support \
     ${ROS_WS_PATH}/install ${ROS_WS_PATH}/install
 COPY --from=build-overlay /root/.bash_aliases /root/.bash_aliases
 
@@ -213,11 +215,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends --no-install-su
     ros-${ROS_DISTRO}-dynamixel-sdk \
     ros-${ROS_DISTRO}-hls-lfcd-lds-driver
 
-## Copy the workspace
+## Copy the packages build from source
 COPY --from=build-overlay \
-    --exclude=${ROS_WS_PATH}/install/turtlebot3_cartographer \
-    --exclude=${ROS_WS_PATH}/install/turtlebot3_navigation2 \
-    --exclude=${ROS_WS_PATH}/install/turtlebot3_rviz2 \
-    --exclude=${ROS_WS_PATH}/install/turtlebot3_support \
+    --exclude=${ROS_WS_PATH}/install/turtlebot3_bringup \
+    --exclude=${ROS_WS_PATH}/install/turtlebot3_node \
     ${ROS_WS_PATH}/install ${ROS_WS_PATH}/install
 COPY --from=build-overlay /root/.bash_aliases /root/.bash_aliases

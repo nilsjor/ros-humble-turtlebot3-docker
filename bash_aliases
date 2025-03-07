@@ -5,7 +5,7 @@ alias clean="colcon clean workspace -y"
 # Add aliases for packages
 alias bringup="ros2 launch turtlebot3_bringup robot.launch.py"
 alias rviz="ros2 launch turtlebot3_rviz2 rviz2.launch.py"
-alias teleop="ros2 launch turtlebot3_support turtlebot3_teleop_joy.py"
+alias teleop="ros2 launch turtlebot3_teleop turtlebot3_teleop_joy.py"
 alias slam="ros2 launch turtlebot3_cartographer cartographer.launch.py"
 
 # Add aliases for attaching/detaching the joypad

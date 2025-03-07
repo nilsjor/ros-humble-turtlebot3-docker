@@ -19,9 +19,9 @@ if [ ! -f /.dockerenv ]; then
 
     ### Re-define a few aliases
     alias build="(cd $ROS_WS_PATH && trap 'cd - > /dev/null' EXIT && \
-	    colcon build && source install/setup.bash)"
+        colcon build --symlink-install && source install/setup.bash)"
     alias clean="(cd $ROS_WS_PATH && trap 'cd - > /dev/null' EXIT && \
-	    colcon clean workspace -y)"
+        colcon clean workspace -y)"
     
     ### Unset wrapper-functions
     unset -f ros2
